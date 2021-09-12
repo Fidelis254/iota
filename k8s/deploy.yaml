@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goshimer-fidel
+spec:
+  selector:
+    matchLabels:
+      app: goshimer
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: goshimer
+    spec:
+      containers:
+      - name: goshimer
+        image: iotacr254.azurecr.io/shimmer:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 300m
+            memory: "100Mi"
+          requests:
+            cpu: 100m
+            memory: "50Mi"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: goshimer-service
+spec:
+  selector:
+    app: goshimer
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+

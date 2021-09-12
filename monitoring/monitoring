@@ -1,0 +1,27 @@
+ //add Helm repo for Prometheus and Grafana
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+
+//create namespace in your aks
+
+kubectl create namespace monitoring
+
+//Install Prometheus chart 
+
+helm install prometheus prometheus-community/prometheus \
+--namespace monitoring \
+--set alertmanager.persistentVolume.storageClass="default" \
+--set server.persistentVolume.storageClass="default" \
+--set server.service.type=LoadBalancer \
+--set rbac.create=true
+
+//Install Grafana for visualization
+
+helm install grafana grafana/grafana \
+--namespace monitoring \
+--set persistence.storageClassName="default" \
+--set persistence.enabled=true \
+--set adminPassword='mypass' \
+--set service.type=LoadBalancer
