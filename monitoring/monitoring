@@ -25,3 +25,13 @@ helm install grafana grafana/grafana \
 --set persistence.enabled=true \
 --set adminPassword='mypass' \
 --set service.type=LoadBalancer
+
+//notification channel
+
+//enable smtp service in grafana
+ 
+ ssh into grafana dashboard
+ Edit /etc/grafana/grafana.ini
+ uncomment host and user
+
+ in grafana dashboard under notification channels add the details to match the ones in grafana.ini.
