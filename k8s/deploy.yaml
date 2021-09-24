@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: goshimer
-        image: iotacr254.azurecr.io/shimmer:latest
+        image: iotacr254.azurecr.io/fidelis254/goshimer:testing
         imagePullPolicy: Always
         ports:
         - containerPort: 80
