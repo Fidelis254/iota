@@ -26,12 +26,44 @@ helm install grafana grafana/grafana \
 --set adminPassword='mypass' \
 --set service.type=LoadBalancer
 
-//notification channel
-
-//enable smtp service in grafana
+///Disatster Recovery scripts.
  
- ssh into grafana dashboard
- Edit /etc/grafana/grafana.ini
- uncomment host and user
+ //Environment setup.
 
- in grafana dashboard under notification channels add the details to match the ones in grafana.ini.
+az group create --name east-coast-rg --location eastus2
+az group create --name west-coast-rg --location westus2
+
+az deployment group create \
+    --name asrDeployment \
+    --template-file deploy.json \
+    --parameters storageAccounts_asrcache_name=asrcache$RANDOM \
+    --resource-group west-coast-rg
+ 
+ //Failover to a secondary region
+ 
+ $vault = Get-AzRecoveryServicesVault -Name "asr-vault"
+    Set-AzRecoveryServicesAsrVaultContext -Vault $vault
+    $PrimaryFabric = Get-AsrFabric -Name "asr-a2a-default-westus2"
+    $PrimaryProtContainer = Get-ASRProtectionContainer -Fabric $PrimaryFabric
+    $ReplicationProtectedItem = Get-ASRReplicationProtectedItem -ProtectionContainer $PrimaryProtContainer -FriendlyName "patient-records"
+    $RecoveryPoints = Get-ASRRecoveryPoint -ReplicationProtectedItem $ReplicationProtectedItem
+    $Job_Failover = Start-ASRUnplannedFailoverJob -ReplicationProtectedItem $ReplicationProtectedItem -Direction PrimaryToRecovery -RecoveryPoint $RecoveryPoints[-1]
+
+    do {
+            $Job_Failover = Get-ASRJob -Job $Job_Failover;
+            sleep 30;
+    } while (($Job_Failover.State -eq "InProgress") -or ($JobFailover.State -eq "NotStarted"))
+
+    $Job_Failover.State
+    $CommitFailoverJob = Start-ASRCommitFailoverJob -ReplicationProtectedItem $ReplicationProtectedItem
+    Get-ASRJob -Job $CommitFailoverJob
+
+
+    //the above does:
+    
+    Store the Azure Site Recovery vault in a variable.
+    Set the context for the session to your vault.
+    Store the protected patient records from the vault.
+    Get a list of all the recovery points.
+    Trigger a failover for the latest recovery point.
+    Show the result of the failover.
